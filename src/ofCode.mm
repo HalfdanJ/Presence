@@ -1,16 +1,28 @@
 #import "ofCode.h"
 #include <stdlib.h>
 
-//https://www.freesound.org/people/Tomlija/sounds/75372/
-
-
 void Communicator::setup(){
     connect();
 
     client.addListener(this);
     
     ofSetDataPathRoot("data/data");
-    typeSound.loadSound(ofToDataPath("laptop_notebook_return.mp3",true));
+/*    typeSound[0].loadSound(ofToDataPath("click1.aif",true));
+    typeSound[1].loadSound(ofToDataPath("click2.aif",true));
+    typeSound[2].loadSound(ofToDataPath("click3.aif",true));
+        typeSound[3].loadSound(ofToDataPath("click4.aif",true));*/
+    
+    typeSound[0].loadSound(ofToDataPath("click5.aif",true));
+   /* reverb = ofxAudioUnit(kAudioUnitType_Effect,
+                          kAudioUnitSubType_MatrixReverb);
+
+    
+    filePlayer.connectTo(reverb).connectTo(output);
+
+    output.start();
+    filePlayer.setFile(ofFilePath::getAbsolutePath("laptop_notebook_return.aiff"));
+*/
+   //filePlayer.loop();
 
 }
 
@@ -52,6 +64,7 @@ void Communicator::onMessage( ofxLibwebsockets::Event& args ){
     cout<<"got message "<<args.message<<endl;
     
     if(args.message == "OK"){
+    //    playKeySound();
         keyCount = 100;
     } else {
         playKeySound();
@@ -65,7 +78,15 @@ void Communicator::onMessage( ofxLibwebsockets::Event& args ){
 void Communicator::playKeySound(){
     //typeSound.setSpeed(2);
 //    typeSound.setPan(ofRandom(0.4,0.6));
-    typeSound.play();
+//    int sound = floor(ofRandom(4));
+    int sound = 0;
+    typeSound[sound].setSpeed(ofRandom(0.9,1.0));
+    typeSound[sound].play();
+
+        //filePlayer.loop(1);
+    
+    
+    
 }
 
 //--------------------------------------------------------------
@@ -98,28 +119,6 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
     }];
     
     communicator.setup();
-    
-    /*
-    
-    // Transparent UI window
-    NSRect wRect = (self.window.frame);
-    NSView *contentView = self.window.contentView;
-    NSRect cRect = (contentView.frame);
-    NSRect rect = NSRectFromCGRect( CGRectMake(wRect.origin.x, wRect.origin.y, cRect.size.width, cRect.size.height) );
-    self.overlayWindow = [[NSWindow alloc]initWithContentRect:rect
-                                                    styleMask:NSBorderlessWindowMask
-                                                      backing:NSBackingStoreBuffered
-                                                        defer:NO];
-    self.overlayWindow.backgroundColor = [NSColor clearColor];
-    [self.overlayWindow setOpaque:NO];
-    // Add it to the window which contains our NSOpenGLView
-    [self.window addChildWindow:self.overlayWindow ordered:NSWindowAbove];
-    
-    // Place UI in overlay window
-    self.interface = [[InterfaceController alloc] initWithNibName:@"Interface" bundle:nil];
-    [self.overlayWindow.contentView addSubview:self.interface.view];
- */
-    
 }
 
 - (void)update
@@ -153,10 +152,8 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
 }
 
 - (void) keyWasPressedFunction:(NSEvent*)event{
-  //  NSLog(@"%@",event);
     keyAmplitude = 255;
-  //  communicator.client.send([[[self.interface password] stringValue] cStringUsingEncoding:NSUTF8StringEncoding]);
-      communicator.client.send("key");
+    communicator.client.send("key");
     communicator.playKeySound();
 }
 

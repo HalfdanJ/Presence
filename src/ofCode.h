@@ -29,7 +29,8 @@ public:
     
     int keyCount;
     
-    ofSoundPlayer typeSound;
+    ofSoundPlayer typeSound[4];
+    
 
 };
 
