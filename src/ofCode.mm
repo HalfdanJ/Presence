@@ -1,19 +1,23 @@
-#import "testView.h"
+#import "ofCode.h"
 #include <stdlib.h>
+
+//https://www.freesound.org/people/Tomlija/sounds/75372/
 
 
 void Communicator::setup(){
-    ofSetLogLevel(OF_LOG_VERBOSE);
+    connect();
 
-    client.connect("dry-reef-2121.herokuapp.com",80);
-//        client.connect("localhost",5000);
-    ofSetLogLevel(OF_LOG_ERROR);
-    
     client.addListener(this);
-
+    
+    ofSetDataPathRoot("data/data");
+    typeSound.loadSound(ofToDataPath("laptop_notebook_return.mp3",true));
 
 }
 
+void Communicator::connect(){
+    client.connect("dry-reef-2121.herokuapp.com",80);
+    //client.connect("127.0.0.1",5000);
+}
 
 //--------------------------------------------------------------
 void Communicator::onConnect( ofxLibwebsockets::Event& args ){
@@ -29,6 +33,13 @@ void Communicator::onOpen( ofxLibwebsockets::Event& args ){
 //--------------------------------------------------------------
 void Communicator::onClose( ofxLibwebsockets::Event& args ){
     cout<<"on close"<<endl;
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        ofSetLogLevel(OF_LOG_VERBOSE);
+        ofLogVerbose()<<"Reconnect";
+        connect();
+        ofSetLogLevel(OF_LOG_ERROR);
+    });
 }
 
 //--------------------------------------------------------------
@@ -39,7 +50,22 @@ void Communicator::onIdle( ofxLibwebsockets::Event& args ){
 //--------------------------------------------------------------
 void Communicator::onMessage( ofxLibwebsockets::Event& args ){
     cout<<"got message "<<args.message<<endl;
-    keyCount = 255;
+    
+    if(args.message == "OK"){
+        keyCount = 100;
+    } else {
+        playKeySound();
+        keyCount = 255;
+    }
+
+    
+
+}
+
+void Communicator::playKeySound(){
+    //typeSound.setSpeed(2);
+//    typeSound.setPan(ofRandom(0.4,0.6));
+    typeSound.play();
 }
 
 //--------------------------------------------------------------
@@ -49,7 +75,8 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
 
 
 
-@implementation testView
+@implementation ofCode
+@synthesize overlayWindow, interface;
 
 - (void)setup
 {
@@ -72,7 +99,27 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
     
     communicator.setup();
     
-
+    /*
+    
+    // Transparent UI window
+    NSRect wRect = (self.window.frame);
+    NSView *contentView = self.window.contentView;
+    NSRect cRect = (contentView.frame);
+    NSRect rect = NSRectFromCGRect( CGRectMake(wRect.origin.x, wRect.origin.y, cRect.size.width, cRect.size.height) );
+    self.overlayWindow = [[NSWindow alloc]initWithContentRect:rect
+                                                    styleMask:NSBorderlessWindowMask
+                                                      backing:NSBackingStoreBuffered
+                                                        defer:NO];
+    self.overlayWindow.backgroundColor = [NSColor clearColor];
+    [self.overlayWindow setOpaque:NO];
+    // Add it to the window which contains our NSOpenGLView
+    [self.window addChildWindow:self.overlayWindow ordered:NSWindowAbove];
+    
+    // Place UI in overlay window
+    self.interface = [[InterfaceController alloc] initWithNibName:@"Interface" bundle:nil];
+    [self.overlayWindow.contentView addSubview:self.interface.view];
+ */
+    
 }
 
 - (void)update
@@ -88,16 +135,17 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
 
 - (void)draw
 {
+    NSLog(@"draw");
     ofSetColor(ofClamp(keyAmplitude,0,255));
     ofRect(0,0,ofGetWidth()*0.5, ofGetHeight());
-
+    
     ofSetColor(ofClamp(communicator.keyCount,0,255));
     ofRect(ofGetWidth()*0.5,0,ofGetWidth()*0.5, ofGetHeight());
 }
 
 - (void)exit
 {
-	
+    
 }
 
 -(void)changeColor:(id)sender
@@ -105,44 +153,46 @@ void Communicator::onBroadcast( ofxLibwebsockets::Event& args ){
 }
 
 - (void) keyWasPressedFunction:(NSEvent*)event{
-    NSLog(@"%@",event);
+  //  NSLog(@"%@",event);
     keyAmplitude = 255;
-    communicator.client.send("key");
+  //  communicator.client.send([[[self.interface password] stringValue] cStringUsingEncoding:NSUTF8StringEncoding]);
+      communicator.client.send("key");
+    communicator.playKeySound();
 }
 
 - (void)keyPressed:(int)key
 {
-	
+    
 }
 
 - (void)keyReleased:(int)key
 {
-	
+    
 }
 
 - (void)mouseMoved:(NSPoint)p
 {
-	
+    
 }
 
 - (void)mouseDragged:(NSPoint)p button:(int)button
 {
-	
+    
 }
 
 - (void)mousePressed:(NSPoint)p button:(int)button
 {
-	
+    
 }
 
 - (void)mouseReleased:(NSPoint)p button:(int)button
 {
-	
+    
 }
 
 - (void)windowResized:(NSSize)size
 {
-	
+    
 }
 
 @end

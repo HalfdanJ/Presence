@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxCocoaGLView.h"
 #include "ofxLibwebsockets.h"
+#include "InterfaceController.h"
+#include "ofxAudioUnit.h"
 
 
 
@@ -10,7 +12,9 @@ class Communicator {
 public:
     
     void setup();
-    
+    int reconnectTimer;
+    void connect();
+
     ofxLibwebsockets::Client client;
     
     // websocket methods
@@ -21,14 +25,25 @@ public:
     void onMessage( ofxLibwebsockets::Event& args );
     void onBroadcast( ofxLibwebsockets::Event& args );
     
+    void playKeySound();
+    
     int keyCount;
     
+    ofSoundPlayer typeSound;
+
 };
 
-@interface testView : ofxCocoaGLView {
+@interface ofCode : ofxCocoaGLView {
     int keyAmplitude;
     Communicator communicator;
+    
+    NSWindow * overlayWindow;
+    InterfaceController * interface;
+    
 }
+
+@property (readwrite) NSWindow * overlayWindow;
+@property InterfaceController * interface;
 
 - (void)setup;
 - (void)update;
